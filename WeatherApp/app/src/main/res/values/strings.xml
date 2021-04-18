@@ -3,4 +3,7 @@
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Todays Weather Demo</string>
+    <string name="update_me">Update Me!</string>
+    <string name="notify_me">Notify Me!</string>
+    <string name="cancel_me">Cancel Me!</string>
 </resources>
