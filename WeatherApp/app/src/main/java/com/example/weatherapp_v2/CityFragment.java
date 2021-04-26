@@ -1,5 +1,6 @@
 package com.example.weatherapp_v2;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -221,6 +222,7 @@ public class CityFragment extends Fragment {
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Consumer<WeatherResult>() {
+                    @SuppressLint("SetTextI18n")
                     @Override
                     public void accept(WeatherResult weatherResult) throws Exception {
 
