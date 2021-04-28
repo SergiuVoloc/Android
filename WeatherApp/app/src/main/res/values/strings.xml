@@ -1,9 +1,28 @@
 <resources>
-    <string name="app_name">WeatherApp-v2</string>
+    <string name="app_name">WeatherApp</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Todays Weather Demo</string>
-    <string name="update_me">Update Me!</string>
-    <string name="notify_me">Notify Me!</string>
-    <string name="cancel_me">Cancel Me!</string>
+    <string name="alarm_on_toast">Weather Alarm On!</string>
+    <string name="alarm_off_toast">Weather Alarm Off!</string>
+    <string name="alarm_off">Daily Alarm off</string>
+    <string name="alarm_on">Daily Alarm on</string>
+    <string name="alarmText">Press here if You want to receive daily notifications:</string>
+<!--    <string name="title_activity_settings">SettingsActivity</string>-->
+<!--    <string name="action_settings">Settings</string>-->
+
+    <!-- Preference Titles -->
+    <string name="messages_header">Messages</string>
+    <string name="sync_header">Sync</string>
+
+    <!-- Messages Preferences -->
+    <string name="signature_title">Your signature</string>
+    <string name="reply_title">Default reply action</string>
+
+    <!-- Sync Preferences -->
+    <string name="sync_title">Sync email periodically</string>
+    <string name="attachment_title">Download incoming attachments</string>
+    <string name="attachment_summary_on">Automatically download attachments for incoming emails
+    </string>
+    <string name="attachment_summary_off">Only download attachments when manually requested</string>
 </resources>

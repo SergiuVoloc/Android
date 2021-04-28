@@ -41,6 +41,16 @@ public class TodayWeatherFragment extends Fragment {
     CompositeDisposable compositeDisposable;
     IOpenWeatherMap mService;
 
+    private CharSequence notificationTitle;
+    private CharSequence notificationTemperature;
+
+
+    public CharSequence getNotificationTitle() {
+        return this.notificationTitle;
+    }
+    public CharSequence getNotificationTemperature() {
+        return this.notificationTemperature;
+    }
 
 
     static TodayWeatherFragment instance;
@@ -86,7 +96,7 @@ public class TodayWeatherFragment extends Fragment {
         return itemView;
     }
 
-    private void getWeatherInformation() {
+    public void getWeatherInformation() {
         compositeDisposable.add(mService.getWeatherByLatLng(String.valueOf(Common.current_location.getLatitude()),
                 String.valueOf(Common.current_location.getLongitude()),
                 Common.APP_ID,
@@ -119,6 +129,8 @@ public class TodayWeatherFragment extends Fragment {
                         weatherPanel.setVisibility(View.VISIBLE);
                         loading.setVisibility(View.GONE);
 
+                        notificationTitle = (CharSequence) txtDescription.getText();
+                        notificationTemperature = (CharSequence) txtTemperature.getText();
 
                     }
                 }, new Consumer<Throwable>() {

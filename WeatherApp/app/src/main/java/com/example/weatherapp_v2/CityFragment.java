@@ -1,6 +1,7 @@
 package com.example.weatherapp_v2;
 
 import android.annotation.SuppressLint;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -48,6 +49,7 @@ public class CityFragment extends Fragment {
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
 
+
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
@@ -67,6 +69,13 @@ public class CityFragment extends Fragment {
     IOpenWeatherMap mService;
 
     static CityFragment instance;
+
+
+
+
+
+
+
 
     public static CityFragment getInstance(){
         if (instance ==null)
@@ -98,6 +107,8 @@ public class CityFragment extends Fragment {
         if (getArguments() != null) {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
+
+
         }
     }
 
@@ -135,7 +146,7 @@ public class CityFragment extends Fragment {
 
 
 
-      private class LoadCities extends SimpleAsyncTask<List<String>> {
+    private class LoadCities extends SimpleAsyncTask<List<String>> {
 
         @Override
         protected List<String> doInBackgroundSimple() {
@@ -234,6 +245,9 @@ public class CityFragment extends Fragment {
                         txt_city_name.setText(weatherResult.getName() + "   " + weatherResult.getSys().getCountry());
                         txt_description.setText(new StringBuilder("Current weather in ")
                                 .append(weatherResult.getName()).toString());
+
+
+
                         txt_temperature.setText(new StringBuilder(
                                 String.valueOf(weatherResult.getMain().getTemp())).append(" °C").toString());
                         txt_date_time.setText(Common.convertUnixToDate(weatherResult.getDt()));
@@ -249,6 +263,9 @@ public class CityFragment extends Fragment {
                         loading.setVisibility(View.GONE);
 
 
+
+
+
                     }
                 }, new Consumer<Throwable>() {
                     @Override
@@ -261,12 +278,12 @@ public class CityFragment extends Fragment {
 
     @Override
     public void  onDestroy(){
-        compositeDisposable.clear();
+//        compositeDisposable.clear();
         super.onDestroy();
     }
     @Override
     public void onStop(){
-        compositeDisposable.clear();
+//        compositeDisposable.clear();
         super.onStop();
     }
 

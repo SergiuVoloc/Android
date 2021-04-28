@@ -6,8 +6,14 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.app.NotificationCompat;
 import androidx.viewpager.widget.ViewPager;
 
+import android.content.SharedPreferences;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.widget.ToggleButton;
+
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -22,18 +28,26 @@ import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CompoundButton;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
+import android.widget.ToggleButton;
 
 
 import com.example.weatherapp_v2.adapter.ViewPagerAdapter;
 import com.example.weatherapp_v2.common.Common;
+import com.example.weatherapp_v2.model.WeatherResult;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
 import com.karumi.dexter.Dexter;
@@ -41,6 +55,7 @@ import com.karumi.dexter.MultiplePermissionsReport;
 import com.karumi.dexter.PermissionToken;
 import com.karumi.dexter.listener.PermissionRequest;
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
+import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
@@ -49,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
     private Toolbar toolbar;
     private TabLayout tabLayout;
     private ViewPager viewPager;
-
+    ImageView imgWeather;
     private CoordinatorLayout coordinatorLayout;
 
     private FusedLocationProviderClient fusedLocationProviderClient;
@@ -57,19 +72,31 @@ public class MainActivity extends AppCompatActivity {
     private LocationRequest locationRequest;
 
     private Button button_notify;
-    private static final String PRIMARY_CHANNEL_ID = "primary_notification_channel";
-    private NotificationManager notificationManager;
     private static final int NOTIFICATION_ID = 0;
+    private static final String PRIMARY_CHANNEL_ID = "primary_notification_channel";
+    private NotificationManager mNotificationManager;
+
+    private  static int notificationId;
     private Button button_cancel;
     private Button button_update;
+    TextView txtCityName;
+
+
 
     private static final String ACTION_UPDATE_NOTIFICATION = "com.example.weatherap_v2.ACTION_UPDATE_NOTIFICATION";
-    private NotificationReceiver notificationReceiver = new NotificationReceiver();
+//    private NotificationReceiver notificationReceiver = new NotificationReceiver();
+
+
+
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+
 
         coordinatorLayout = (CoordinatorLayout)findViewById(R.id.root_view);
 
@@ -78,7 +105,7 @@ public class MainActivity extends AppCompatActivity {
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        registerReceiver(notificationReceiver, new IntentFilter(ACTION_UPDATE_NOTIFICATION));
+//        registerReceiver(notificationReceiver, new IntentFilter(ACTION_UPDATE_NOTIFICATION));
 
         //Request permission
         Dexter.withActivity(this)
@@ -106,39 +133,125 @@ public class MainActivity extends AppCompatActivity {
                 }).check();
 
 
+
+
+
+
+        // alarm test
+
+        mNotificationManager = (NotificationManager)
+                getSystemService(NOTIFICATION_SERVICE);
+
+        ToggleButton alarmToggle = findViewById(R.id.alarmToggle);
+
+        // Set up the Notification Broadcast Intent.
+        Intent notifyIntent = new Intent(this, AlarmReceiver.class);
+
+        boolean alarmUp = (PendingIntent.getBroadcast(this, NOTIFICATION_ID,
+                notifyIntent, PendingIntent.FLAG_NO_CREATE) != null);
+        alarmToggle.setChecked(alarmUp);
+
+        final PendingIntent notifyPendingIntent = PendingIntent.getBroadcast
+                (this, NOTIFICATION_ID, notifyIntent,
+                        PendingIntent.FLAG_UPDATE_CURRENT);
+
+        final AlarmManager alarmManager = (AlarmManager) getSystemService
+                (ALARM_SERVICE);
+
+        // Set the click listener for the toggle button.
+        alarmToggle.setOnCheckedChangeListener
+                (new CompoundButton.OnCheckedChangeListener() {
+
+                    // Shared preferences object
+                    private SharedPreferences mPreferences;
+
+                    // Name of shared preferences file
+                    private String sharedPrefFile =
+                            "com.example.weatherapp_v2";
+
+                    @Override
+                    public void onCheckedChanged
+                            (CompoundButton buttonView, boolean isChecked) {
+                        String toastMessage;
+                        if (isChecked) {
+
+//                          long repeatInterval = AlarmManager.INTERVAL_DAY;
+                            long repeatInterval = 10L;
+
+                            long triggerTime = SystemClock.elapsedRealtime()
+                                    + repeatInterval;
+
+
+                            if (alarmManager != null) {
+                                alarmManager.setInexactRepeating
+                                        (AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                                                triggerTime, repeatInterval,
+                                                notifyPendingIntent);
+                            }
+                            // Set the toast message for the "on" case.
+                            toastMessage = getString(R.string.alarm_on_toast);
+
+                        } else {
+                            // Cancel notification if the alarm is turned off.
+                            mNotificationManager.cancelAll();
+
+                            if (alarmManager != null) {
+                                alarmManager.cancel(notifyPendingIntent);
+                            }
+                            // Set the toast message for the "off" case.
+                            toastMessage = getString(R.string.alarm_off_toast);
+
+                        }
+
+                        // Show a toast to say the alarm is turned on or off.
+                        Toast.makeText(MainActivity.this, toastMessage,
+                                Toast.LENGTH_SHORT).show();
+
+
+
+                        // Restore data
+
+                    }
+                });
+
+        // Create the notification channel.
         createNotificationChannel();
 
 
-        button_notify = findViewById(R.id.notify);
-        button_notify.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                sendNotification();
-            }
-        });
-
-        button_update = findViewById(R.id.update);
-        button_update.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                //Update the notification
-                updateNotification();
-            }
-        });
-
-        button_cancel = findViewById(R.id.cancel);
-        button_cancel.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                //Cancel the notification
-                cancelNotification();
-            }
-        });
 
 
 
 
     }
+
+
+    public void createNotificationChannel() {
+
+        // Create a notification manager object.
+        mNotificationManager =
+                (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
+        // Notification channels are only available in OREO and higher.
+        // So, add a check on SDK version.
+        if (android.os.Build.VERSION.SDK_INT >=
+                android.os.Build.VERSION_CODES.O) {
+
+            // Create the NotificationChannel with all the parameters.
+            NotificationChannel notificationChannel = new NotificationChannel
+                    (PRIMARY_CHANNEL_ID,
+                            "Stand up notification",
+                            NotificationManager.IMPORTANCE_HIGH);
+
+            notificationChannel.enableLights(true);
+            notificationChannel.setLightColor(Color.RED);
+            notificationChannel.enableVibration(true);
+            notificationChannel.setDescription("Notifies every 15 minutes to " +
+                    "stand up and walk");
+            mNotificationManager.createNotificationChannel(notificationChannel);
+
+        }
+    }
+
 
     private void buildLocationCallBack() {
         locationCallback = new LocationCallback(){
@@ -180,86 +293,4 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    public void createNotificationChannel(){
-        notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
-            // Creating a NotificationChannel
-            NotificationChannel notificationChannel = new NotificationChannel(PRIMARY_CHANNEL_ID,
-                    "Audio Notification", NotificationManager.IMPORTANCE_HIGH);
-
-            notificationChannel.enableLights(true);
-            notificationChannel.setLightColor(Color.BLUE);
-            notificationChannel.enableVibration(true);
-            notificationChannel.setDescription("Today will be Sunny!");
-            notificationChannel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
-            notificationManager.createNotificationChannel(notificationChannel);
-        }
-    }
-
-    private NotificationCompat.Builder getNotificationBuilder(){
-
-        Intent notificationIntent = new Intent(this, MainActivity.class);
-        PendingIntent notificationPendingIntent = PendingIntent.getActivity(this,NOTIFICATION_ID,
-                notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-
-        NotificationCompat.Builder notifyBuilder = new NotificationCompat.Builder(this, PRIMARY_CHANNEL_ID)
-        .setContentTitle("Your Weather for today:")
-        .setContentText("Today is Sunny and 25 C")
-        .setContentIntent(notificationPendingIntent)
-        .setAutoCancel(true)
-        .setPriority(NotificationCompat.PRIORITY_HIGH)
-        .setDefaults(NotificationCompat.DEFAULT_ALL)
-        .setSmallIcon(R.drawable.ic_notifiaction);
-        return notifyBuilder;
-    }
-
-    public void sendNotification() {
-        Intent updateIntent = new Intent(ACTION_UPDATE_NOTIFICATION);
-
-        PendingIntent updatePendingIntent = PendingIntent.getBroadcast
-                (this, NOTIFICATION_ID, updateIntent, PendingIntent.FLAG_ONE_SHOT);
-
-        NotificationCompat.Builder notifyBuilder = getNotificationBuilder();
-        notifyBuilder.addAction(R.drawable.ic_update, "Update Notification", updatePendingIntent);
-
-        notificationManager.notify(NOTIFICATION_ID, notifyBuilder.build());
-    }
-
-
-    public void updateNotification() {
-        Bitmap androidImage = BitmapFactory.decodeResource(getResources(),R.drawable.test);
-
-        NotificationCompat.Builder notifyBuilder = getNotificationBuilder();
-        notifyBuilder.setStyle(new NotificationCompat.BigPictureStyle()
-        .bigPicture(androidImage).setBigContentTitle("Here is Your weather image!"));
-
-        notificationManager.notify(NOTIFICATION_ID, notifyBuilder.build());
-    }
-
-    public void cancelNotification() {
-        notificationManager.cancel(NOTIFICATION_ID);
-    }
-
-    public class NotificationReceiver extends BroadcastReceiver{
-
-        public NotificationReceiver(){ }
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            // Update the notification
-
-
-
-            updateNotification();
-
-        }
-    }
-
-    @Override
-    protected void onDestroy() {
-        unregisterReceiver((notificationReceiver));
-        super.onDestroy();
-    }
 }
