@@ -84,11 +84,6 @@ public class MainActivity extends AppCompatActivity {
 
 
     private static final String ACTION_UPDATE_NOTIFICATION = "com.example.weatherap_v2.ACTION_UPDATE_NOTIFICATION";
-//    private NotificationReceiver notificationReceiver = new NotificationReceiver();
-
-
-
-
 
 
     @Override
@@ -105,7 +100,6 @@ public class MainActivity extends AppCompatActivity {
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-//        registerReceiver(notificationReceiver, new IntentFilter(ACTION_UPDATE_NOTIFICATION));
 
         //Request permission
         Dexter.withActivity(this)
@@ -137,7 +131,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-        // alarm test
+        // alarm
 
         mNotificationManager = (NotificationManager)
                 getSystemService(NOTIFICATION_SERVICE);
@@ -175,8 +169,8 @@ public class MainActivity extends AppCompatActivity {
                         String toastMessage;
                         if (isChecked) {
 
-//                          long repeatInterval = AlarmManager.INTERVAL_DAY;
-                            long repeatInterval = 10L;
+                            long repeatInterval = AlarmManager.INTERVAL_DAY;
+//                            long repeatInterval = 10L;
 
                             long triggerTime = SystemClock.elapsedRealtime()
                                     + repeatInterval;
@@ -207,9 +201,6 @@ public class MainActivity extends AppCompatActivity {
                         Toast.makeText(MainActivity.this, toastMessage,
                                 Toast.LENGTH_SHORT).show();
 
-
-
-                        // Restore data
 
                     }
                 });
